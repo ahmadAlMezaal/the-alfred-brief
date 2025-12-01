@@ -8,6 +8,7 @@
 ## PHASE EXECUTION LOG
 
 ### ✅ Phase 1: The Monorepo Foundation
+
 - **Objective:** Initialize the folder structure and provision infrastructure.
 - **Status:** DONE
 - **Completed Tasks:**
@@ -17,6 +18,7 @@
   - ✅ **Infra:** Created `terraform/main.tf` with Vercel and GitHub provider scaffolds.
 
 ### ✅ Phase 2: The Database & Scraper Skeleton
+
 - **Objective:** Connect Supabase and create backend structure.
 - **Status:** DONE
 - **Completed Tasks:**
@@ -28,6 +30,7 @@
   - ✅ Added `supabase` dependency to `pyproject.toml`.
 
 ### ✅ Phase 3: The Scraper Engine (Python)
+
 - **Objective:** Build the first "Intelligence Source" (e.g., Gov.uk).
 - **Status:** DONE
 - **Completed Tasks:**
@@ -37,6 +40,7 @@
   - ✅ Updated `backend/main.py` to run the immigration scraper on startup.
 
 ### ✅ Phase 4: The Email Dispatcher
+
 - **Objective:** Build the mailer module to send daily digest emails.
 - **Status:** DONE
 - **Completed Tasks:**
@@ -45,8 +49,19 @@
   - ✅ Updated `backend/main.py` with mode flags (`scrape`, `mail`, `all`).
   - ✅ Loads `RESEND_API_KEY` from `.env`.
 
-### ⏳ Phase 5: The Dashboard (Next.js)
-- **Objective:** User Signup & Preference Selection.
+### ✅ Phase 5: The Dashboard (Next.js)
+
+- **Objective:** Add Home Page for Today's News.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Installed dependencies: `@supabase/supabase-js`, `@supabase/ssr`, `lucide-react`, `clsx`, `tailwind-merge`.
+  - ✅ Created `frontend/src/utils/supabase/server.ts` (Server Components helper).
+  - ✅ Created `frontend/src/utils/supabase/client.ts` (Client Components helper).
+  - ✅ Created `frontend/src/components/NewsCard.tsx` (dark-themed card with title, category badge, summary).
+  - ✅ Created `frontend/src/components/Navbar.tsx` (top bar with "The Alfred Brief" branding).
+  - ✅ Updated `frontend/src/app/page.tsx` (Dashboard fetching latest 20 news items in responsive grid).
+  - ✅ Applied Gotham/Dark Mode aesthetic (Slate-950 background, slate-50 text).
 
 ## CURRENT STATE
-- Phase 4 complete. Email dispatcher operational with Resend integration. Ready for Phase 5.
+
+- Phase 5 complete. Frontend dashboard operational with Supabase integration and dark theme.
