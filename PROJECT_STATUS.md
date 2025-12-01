@@ -36,8 +36,17 @@
   - ✅ Implemented `scrape_and_save()` with idempotent upsert logic (based on URL unique constraint).
   - ✅ Updated `backend/main.py` to run the immigration scraper on startup.
 
-### ⏳ Phase 4: The Dashboard (Next.js)
+### ✅ Phase 4: The Email Dispatcher
+- **Objective:** Build the mailer module to send daily digest emails.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Installed `resend` dependency via Poetry.
+  - ✅ Created `backend/src/mailer.py` with `generate_html_digest()` and `send_digest()` functions.
+  - ✅ Updated `backend/main.py` with mode flags (`scrape`, `mail`, `all`).
+  - ✅ Loads `RESEND_API_KEY` from `.env`.
+
+### ⏳ Phase 5: The Dashboard (Next.js)
 - **Objective:** User Signup & Preference Selection.
 
 ## CURRENT STATE
-- Phase 3 complete. Immigration scraper operational with idempotent database writes. Ready for Phase 4.
+- Phase 4 complete. Email dispatcher operational with Resend integration. Ready for Phase 5.
