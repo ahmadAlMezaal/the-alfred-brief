@@ -27,11 +27,17 @@
   - ✅ Created `backend/main.py` entry point.
   - ✅ Added `supabase` dependency to `pyproject.toml`.
 
-### ⏳ Phase 3: The Scraper Engine (Python)
+### ✅ Phase 3: The Scraper Engine (Python)
 - **Objective:** Build the first "Intelligence Source" (e.g., Gov.uk).
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Created `backend/src/scrapers/` module with `__init__.py`.
+  - ✅ Created `backend/src/scrapers/immigration.py` scraper.
+  - ✅ Implemented `scrape_and_save()` with idempotent upsert logic (based on URL unique constraint).
+  - ✅ Updated `backend/main.py` to run the immigration scraper on startup.
 
 ### ⏳ Phase 4: The Dashboard (Next.js)
 - **Objective:** User Signup & Preference Selection.
 
 ## CURRENT STATE
-- Phase 2 complete. Database schema and backend skeleton ready. Ready for Phase 3.
+- Phase 3 complete. Immigration scraper operational with idempotent database writes. Ready for Phase 4.
