@@ -16,9 +16,16 @@
   - ✅ **Backend:** Initialized Python project with Poetry (`requests`, `beautifulsoup4`, `python-dotenv`).
   - ✅ **Infra:** Created `terraform/main.tf` with Vercel and GitHub provider scaffolds.
 
-### ⏳ Phase 2: The Database & Secrets
-- **Objective:** Connect Supabase and sync secrets.
-- **Tasks:** Supabase Setup, Terraform Secret Sync.
+### ✅ Phase 2: The Database & Scraper Skeleton
+- **Objective:** Connect Supabase and create backend structure.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Created `terraform/supabase.sql` with tables: `subscribers`, `news_items`, `sent_logs`.
+  - ✅ Created `backend/src/` module structure.
+  - ✅ Created `backend/src/config.py` with dotenv for `SUPABASE_URL` and `SUPABASE_KEY`.
+  - ✅ Created `backend/src/db.py` with Supabase client connection.
+  - ✅ Created `backend/main.py` entry point.
+  - ✅ Added `supabase` dependency to `pyproject.toml`.
 
 ### ⏳ Phase 3: The Scraper Engine (Python)
 - **Objective:** Build the first "Intelligence Source" (e.g., Gov.uk).
@@ -27,4 +34,4 @@
 - **Objective:** User Signup & Preference Selection.
 
 ## CURRENT STATE
-- Phase 1 complete. Monorepo structure established. Ready for Phase 2.
+- Phase 2 complete. Database schema and backend skeleton ready. Ready for Phase 3.
