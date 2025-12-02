@@ -62,6 +62,21 @@
   - ✅ Updated `frontend/src/app/page.tsx` (Dashboard fetching latest 20 news items in responsive grid).
   - ✅ Applied Gotham/Dark Mode aesthetic (Slate-950 background, slate-50 text).
 
+### ✅ Phase 6: The Frictionless Subscriber (No-Auth)
+
+- **Objective:** Enable passwordless subscription and preference management via magic tokens.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Created `terraform/migrations/02_add_tokens.sql` (adds `management_token` UUID column with index).
+  - ✅ Created `frontend/src/app/actions.ts` with `subscribeUser()` and `requestMagicLink()` Server Actions.
+  - ✅ Created `frontend/src/components/PreferencesForm.tsx` (client component with toggle switches).
+  - ✅ Created `frontend/src/app/preferences/page.tsx` (Server Component with token-based lookup).
+  - ✅ Installed `framer-motion` for smooth UI animations.
+  - ✅ Created `frontend/src/components/SubscribeHero.tsx` (hero with email input, topic pills, framer-motion animations).
+  - ✅ Created `frontend/src/components/PreferencesLookup.tsx` (magic link request form for existing users).
+  - ✅ Updated `frontend/src/app/page.tsx` (SubscribeHero at top, news grid below).
+  - ✅ Applied Gotham dark mode aesthetic throughout (gradient orbs, slate tones, blue accents).
+
 ## CURRENT STATE
 
-- Phase 5 complete. Frontend dashboard operational with Supabase integration and dark theme.
+- Phase 6 fully complete. Subscription UI integrated with animated hero, topic toggles, and magic link flow for preference management.
