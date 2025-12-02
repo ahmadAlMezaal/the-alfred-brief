@@ -115,6 +115,30 @@
     - Each scraper wrapped in its own try/catch block for fault isolation.
   - ✅ Fixed `backend/src/mailer.py`: Corrected column name from `active` to `is_active`.
 
+### ✅ Phase 9: UI Refinement & Filtering
+
+- **Objective:** Transform UI from "Landing Page" to "Content Dashboard" with category filtering.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Created `frontend/src/components/DashboardHeader.tsx` (compact subscribe banner).
+    - Replaced large hero with thin header (title + inline email input).
+    - Added expandable topic selection panel.
+    - News grid now visible above the fold.
+  - ✅ Created `frontend/src/components/CategoryFilter.tsx` (filter tabs/pills).
+    - Tabs: [All] [Immigration] [Tech] [Finance].
+    - Shows item counts per category.
+    - Animated active indicator.
+  - ✅ Created `frontend/src/components/NewsGrid.tsx` (client component with filtering).
+    - Client-side `activeFilter` state management.
+    - Uses `AnimatePresence` (Framer Motion) for smooth layout transitions.
+    - Empty state messaging per category.
+  - ✅ Polished `frontend/src/components/NewsCard.tsx`.
+    - Smaller, subtler category badge (text + background tint).
+    - Cleaner typography and spacing.
+    - "Read article" link with arrow icon animation.
+  - ✅ Responsive grid layout: 1 column (mobile), 2 columns (tablet), 3 columns (desktop).
+  - ✅ Updated `frontend/src/app/page.tsx` to use new components.
+
 ## CURRENT STATE
 
-- Phase 8 fully complete. All three categories (Immigration, Tech, Finance) now have working scrapers. Users selecting any topic will receive relevant data in their personalized daily briefs.
+- Phase 9 fully complete. The dashboard now prioritizes content visibility with a compact subscribe banner and category filtering. News grid is responsive and above-the-fold.
