@@ -1,6 +1,7 @@
 """Mailer module for The Alfred Brief - Email Dispatcher."""
 
 import os
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 import resend
@@ -11,6 +12,9 @@ from src.db import get_client
 load_dotenv()
 
 RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
+
+# Valid category keys (must match preferences_json keys)
+VALID_CATEGORIES = ("immigration", "tech", "finance")
 
 
 def validate_resend_config() -> bool:
@@ -73,43 +77,139 @@ def generate_html_digest(news_items: list[dict[str, Any]]) -> str:
     """
 
 
-def send_digest(to_email: str) -> dict[str, Any]:
-    """Fetch latest news items and send digest email.
+def get_subscriber_categories(preferences_json: dict[str, Any] | None) -> set[str]:
+    """Extract enabled categories from subscriber preferences.
 
     Args:
-        to_email: Recipient email address.
+        preferences_json: The subscriber's preferences dict (e.g., {"immigration": true, "tech": false}).
 
     Returns:
-        Resend API response.
+        Set of category names where the value is truthy.
+    """
+    if not preferences_json:
+        return set()
+
+    return {
+        category
+        for category in VALID_CATEGORIES
+        if preferences_json.get(category, False)
+    }
+
+
+def filter_news_for_subscriber(
+    news_items: list[dict[str, Any]], enabled_categories: set[str]
+) -> list[dict[str, Any]]:
+    """Filter news items to only those matching subscriber's preferences.
+
+    Args:
+        news_items: All today's news items.
+        enabled_categories: Set of category names the subscriber wants.
+
+    Returns:
+        Filtered list of news items.
+    """
+    return [
+        item
+        for item in news_items
+        if item.get("category", "").lower() in enabled_categories
+    ]
+
+
+def send_daily_briefs() -> dict[str, Any]:
+    """Send personalized daily briefs to all active subscribers.
+
+    Logic:
+        1. Fetch all active subscribers.
+        2. Fetch today's news items.
+        3. For each subscriber:
+           - Parse their preferences.
+           - Filter news to their categories.
+           - If no matches, skip (don't spam).
+           - If matches exist, generate HTML and send.
+
+    Returns:
+        Summary dict with sent_count, skipped_count, and errors.
     """
     validate_resend_config()
     resend.api_key = RESEND_API_KEY
 
-    # Fetch latest 5 news items from Supabase
     client = get_client()
-    response = (
-        client.table("news_items")
-        .select("*")
-        .order("scraped_at", desc=True)
-        .limit(5)
+
+    # Fetch all active subscribers
+    subscribers_response = (
+        client.table("subscribers")
+        .select("id, email, preferences_json")
+        .eq("active", True)
         .execute()
     )
-    news_items = response.data
+    subscribers = subscribers_response.data
+    print(f"Found {len(subscribers)} active subscribers.")
 
-    print(f"Fetched {len(news_items)} news items for digest.")
+    if not subscribers:
+        print("No active subscribers. Skipping email dispatch.")
+        return {"sent_count": 0, "skipped_count": 0, "errors": []}
 
-    # Generate HTML content
-    html_content = generate_html_digest(news_items)
+    # Fetch today's news items (scraped in the last 24 hours)
+    today_start = datetime.now(timezone.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    news_response = (
+        client.table("news_items")
+        .select("*")
+        .gte("scraped_at", today_start.isoformat())
+        .order("scraped_at", desc=True)
+        .execute()
+    )
+    all_news_items = news_response.data
+    print(f"Found {len(all_news_items)} news items from today.")
 
-    # Send email via Resend
-    params: resend.Emails.SendParams = {
-        "from": "Alfred <onboarding@resend.dev>",
-        "to": [to_email],
-        "subject": "Your Daily Brief from Alfred",
-        "html": html_content,
-    }
+    if not all_news_items:
+        print("No news items today. Skipping email dispatch.")
+        return {"sent_count": 0, "skipped_count": len(subscribers), "errors": []}
 
-    email_response = resend.Emails.send(params)
-    print(f"Email sent successfully to {to_email}")
+    sent_count = 0
+    skipped_count = 0
+    errors: list[str] = []
 
-    return email_response
+    for subscriber in subscribers:
+        email = subscriber.get("email")
+        preferences = subscriber.get("preferences_json")
+
+        if not email:
+            continue
+
+        # Get enabled categories for this subscriber
+        enabled_categories = get_subscriber_categories(preferences)
+
+        if not enabled_categories:
+            print(f"  Skipping {email}: No categories enabled.")
+            skipped_count += 1
+            continue
+
+        # Filter news to subscriber's preferences
+        personalized_news = filter_news_for_subscriber(all_news_items, enabled_categories)
+
+        if not personalized_news:
+            print(f"  Skipping {email}: No matching news for their preferences.")
+            skipped_count += 1
+            continue
+
+        # Generate and send personalized email
+        try:
+            html_content = generate_html_digest(personalized_news)
+            params: resend.Emails.SendParams = {
+                "from": "Alfred <onboarding@resend.dev>",
+                "to": [email],
+                "subject": "Your Daily Brief from Alfred",
+                "html": html_content,
+            }
+            resend.Emails.send(params)
+            print(f"  Sent to {email}: {len(personalized_news)} items.")
+            sent_count += 1
+        except Exception as e:
+            error_msg = f"Failed to send to {email}: {e}"
+            print(f"  {error_msg}")
+            errors.append(error_msg)
+
+    print(f"\nDaily briefs complete: {sent_count} sent, {skipped_count} skipped, {len(errors)} errors.")
+    return {"sent_count": sent_count, "skipped_count": skipped_count, "errors": errors}

@@ -4,7 +4,7 @@ import sys
 
 from src.db import test_connection
 from src.scrapers.immigration import scrape_and_save as scrape_immigration
-from src.mailer import send_digest
+from src.mailer import send_daily_briefs
 
 
 def run_scrapers() -> None:
@@ -16,11 +16,12 @@ def run_scrapers() -> None:
         print(f"Immigration scraper failed: {e}")
 
 
-def run_mailer(to_email: str) -> None:
-    """Send the daily digest email."""
-    print("\n--- Sending Daily Digest ---")
+def run_mailer() -> None:
+    """Send personalized daily briefs to all active subscribers."""
+    print("\n--- Sending Daily Briefs ---")
     try:
-        send_digest(to_email)
+        result = send_daily_briefs()
+        print(f"Result: {result}")
     except Exception as e:
         print(f"Mailer failed: {e}")
 
@@ -44,7 +45,7 @@ def main(mode: str = "all") -> None:
         run_scrapers()
 
     if mode in ("mail", "all"):
-        run_mailer("ahmad.hmazaal@gmail.com")
+        run_mailer()
 
 
 if __name__ == "__main__":

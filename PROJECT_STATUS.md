@@ -77,6 +77,22 @@
   - ✅ Updated `frontend/src/app/page.tsx` (SubscribeHero at top, news grid below).
   - ✅ Applied Gotham dark mode aesthetic throughout (gradient orbs, slate tones, blue accents).
 
+### ✅ Phase 7: The Personalization Engine
+
+- **Objective:** Send personalized emails based on subscriber preferences.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Verified scraper categories match preference keys (`immigration`, `tech`, `finance`).
+  - ✅ Created `get_subscriber_categories()` helper to parse `preferences_json`.
+  - ✅ Created `filter_news_for_subscriber()` to filter news by enabled categories.
+  - ✅ Refactored `send_digest()` → `send_daily_briefs()` with personalization logic:
+    - Fetches all active subscribers from `subscribers` table.
+    - Fetches today's news items (scraped within last 24 hours).
+    - Loops through each subscriber, filters news to their preferences.
+    - Skips subscribers with no matching news (no spam).
+    - Sends personalized HTML digest via Resend.
+  - ✅ Updated `backend/main.py` to call `send_daily_briefs()`.
+
 ## CURRENT STATE
 
-- Phase 6 fully complete. Subscription UI integrated with animated hero, topic toggles, and magic link flow for preference management.
+- Phase 7 fully complete. Backend now sends personalized daily briefs based on each subscriber's topic preferences (Immigration, Tech, Finance).
