@@ -139,6 +139,27 @@
   - ✅ Responsive grid layout: 1 column (mobile), 2 columns (tablet), 3 columns (desktop).
   - ✅ Updated `frontend/src/app/page.tsx` to use new components.
 
+### ✅ Phase 10: Email Aesthetics
+
+- **Objective:** Transform the plain-text email into a premium, HTML-styled newsletter matching the Gotham web aesthetic.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Created `format_scraped_date()` helper to parse ISO timestamps and format as "DD Mon" (e.g., "02 Dec").
+  - ✅ Created `get_category_badge_style()` helper for color-coded category badges:
+    - Immigration: Purple (`#7c3aed`)
+    - Tech: Green (`#059669`)
+    - Finance: Amber (`#d97706`)
+  - ✅ Refactored `generate_html_digest()` with Gotham dark aesthetic:
+    - Dark background (`#0f172a` Slate-950) with light text (`#e2e8f0`).
+    - Centered "The Alfred Brief" header with subtitle.
+    - News items styled as cards (`#1e293b` Slate-800, 8px radius, 20px padding).
+    - Color-coded category badges with formatted dates.
+    - Blue "Read article →" CTA buttons.
+    - "Manage Preferences" footer link using subscriber's `management_token`.
+  - ✅ Updated `send_daily_briefs()` to fetch and pass `management_token` to email generator.
+  - ✅ Added `APP_BASE_URL` environment variable support (defaults to `http://localhost:3000`).
+  - ✅ Used table-based layout with inline CSS for maximum email client compatibility.
+
 ## CURRENT STATE
 
-- Phase 9 fully complete. The dashboard now prioritizes content visibility with a compact subscribe banner and category filtering. News grid is responsive and above-the-fold.
+- Phase 10 fully complete. Emails now feature a premium dark-themed design matching the web dashboard, with styled news cards, color-coded category badges, formatted dates, and a "Manage Preferences" link in the footer.

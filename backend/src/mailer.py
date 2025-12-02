@@ -1,7 +1,7 @@
 """Mailer module for The Alfred Brief - Email Dispatcher."""
 
 import os
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any
 
 import resend
@@ -12,6 +12,7 @@ from src.db import get_client
 load_dotenv()
 
 RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
+APP_BASE_URL: str = os.getenv("APP_BASE_URL", "http://localhost:3000")
 
 # Valid category keys (must match preferences_json keys)
 VALID_CATEGORIES = ("immigration", "tech", "finance")
@@ -24,57 +25,201 @@ def validate_resend_config() -> bool:
     return True
 
 
-def generate_html_digest(news_items: list[dict[str, Any]]) -> str:
-    """Generate HTML email content from news items."""
-    if not news_items:
-        return """
-        <html>
-        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #1a365d; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                The Alfred Brief
-            </h1>
-            <p style="color: #718096;">No new intelligence items today. Check back tomorrow.</p>
-        </body>
-        </html>
-        """
+def format_scraped_date(scraped_at: str) -> str:
+    """Parse scraped_at timestamp and format as 'DD Mon' (e.g., '02 Dec').
 
-    items_html = ""
+    Args:
+        scraped_at: ISO format timestamp string.
+
+    Returns:
+        Formatted date string or empty string if parsing fails.
+    """
+    if not scraped_at:
+        return ""
+    try:
+        dt = datetime.fromisoformat(scraped_at.replace("Z", "+00:00"))
+        return dt.strftime("%d %b")
+    except (ValueError, TypeError):
+        return ""
+
+
+def get_category_badge_style(category: str) -> tuple[str, str]:
+    """Get inline styles for category badge based on category name.
+
+    Args:
+        category: The category name (immigration, tech, finance).
+
+    Returns:
+        Tuple of (background_color, text_color) hex values.
+    """
+    category_styles = {
+        "immigration": ("#7c3aed", "#ede9fe"),  # Purple
+        "tech": ("#059669", "#d1fae5"),  # Green
+        "finance": ("#d97706", "#fef3c7"),  # Amber
+    }
+    return category_styles.get(category.lower(), ("#64748b", "#f1f5f9"))  # Default: Slate
+
+
+def generate_html_digest(
+    news_items: list[dict[str, Any]], management_token: str | None = None
+) -> str:
+    """Generate premium HTML email content with Gotham dark aesthetic.
+
+    Args:
+        news_items: List of news item dicts to include in the digest.
+        management_token: Optional token for the preferences link.
+
+    Returns:
+        Fully styled HTML string for the email body.
+    """
+    # Build preferences URL
+    preferences_url = f"{APP_BASE_URL}/preferences?token={management_token}" if management_token else ""
+
+    if not news_items:
+        return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding-bottom: 32px; border-bottom: 1px solid #334155;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px;">
+                                The Alfred Brief
+                            </h1>
+                            <p style="margin: 8px 0 0 0; font-size: 14px; color: #94a3b8;">
+                                Your Daily Intelligence Digest
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Empty State -->
+                    <tr>
+                        <td style="padding: 48px 0; text-align: center;">
+                            <p style="margin: 0; font-size: 16px; color: #94a3b8;">
+                                No new intelligence items today. Check back tomorrow.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding-top: 32px; border-top: 1px solid #334155; text-align: center;">
+                            {f'<a href="{preferences_url}" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">Manage Preferences</a>' if management_token else ''}
+                            <p style="margin: 24px 0 0 0; font-size: 12px; color: #64748b;">
+                                The Alfred Brief - Delivered with precision.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
+    # Build news cards HTML
+    cards_html = ""
     for item in news_items:
         title = item.get("title", "Untitled")
         url = item.get("url", "#")
         category = item.get("category", "Unknown")
         scraped_at = item.get("scraped_at", "")
 
-        items_html += f"""
-        <li style="margin-bottom: 20px; padding: 15px; background-color: #f7fafc; border-radius: 8px;">
-            <a href="{url}" style="color: #2b6cb0; text-decoration: none; font-weight: bold; font-size: 16px;">
-                {title}
-            </a>
-            <p style="color: #718096; margin: 8px 0 0 0; font-size: 12px;">
-                Category: {category} | {scraped_at}
-            </p>
-        </li>
-        """
+        formatted_date = format_scraped_date(scraped_at)
+        bg_color, text_color = get_category_badge_style(category)
+
+        cards_html += f"""
+                    <tr>
+                        <td style="padding-bottom: 16px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #1e293b; border-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <!-- Category Badge & Date -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td>
+                                                    <span style="display: inline-block; padding: 4px 10px; background-color: {bg_color}; color: {text_color}; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 4px;">
+                                                        {category}
+                                                    </span>
+                                                </td>
+                                                <td align="right">
+                                                    <span style="font-size: 12px; color: #64748b;">
+                                                        {formatted_date}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!-- Title -->
+                                        <h2 style="margin: 12px 0 16px 0; font-size: 18px; font-weight: 600; color: #f1f5f9; line-height: 1.4;">
+                                            {title}
+                                        </h2>
+                                        <!-- Read More Button -->
+                                        <a href="{url}" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 500;">
+                                            Read article →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+"""
 
     return f"""
-    <html>
-    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
-        <h1 style="color: #1a365d; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-            The Alfred Brief
-        </h1>
-        <p style="color: #4a5568; margin-bottom: 20px;">
-            Your daily intelligence briefing is ready, sir.
-        </p>
-        <ul style="list-style: none; padding: 0; margin: 0;">
-            {items_html}
-        </ul>
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
-        <p style="color: #a0aec0; font-size: 12px; text-align: center;">
-            The Alfred Brief - Your daily intelligence digest
-        </p>
-    </body>
-    </html>
-    """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding-bottom: 32px; border-bottom: 1px solid #334155;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px;">
+                                The Alfred Brief
+                            </h1>
+                            <p style="margin: 8px 0 0 0; font-size: 14px; color: #94a3b8;">
+                                Your Daily Intelligence Digest
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding: 24px 0;">
+                            <p style="margin: 0; font-size: 16px; color: #e2e8f0;">
+                                Good morning. Your briefing is ready.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- News Cards -->
+{cards_html}
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding-top: 24px; border-top: 1px solid #334155; text-align: center;">
+                            {f'<a href="{preferences_url}" style="display: inline-block; padding: 12px 24px; background-color: #1e293b; color: #e2e8f0; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500; border: 1px solid #334155;">Manage Preferences</a>' if management_token else ''}
+                            <p style="margin: 24px 0 0 0; font-size: 12px; color: #64748b;">
+                                The Alfred Brief - Delivered with precision.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
 
 
 def get_subscriber_categories(preferences_json: dict[str, Any] | None) -> set[str]:
@@ -135,10 +280,10 @@ def send_daily_briefs() -> dict[str, Any]:
 
     client = get_client()
 
-    # Fetch all active subscribers
+    # Fetch all active subscribers (including management_token for preferences link)
     subscribers_response = (
         client.table("subscribers")
-        .select("id, email, preferences_json")
+        .select("id, email, preferences_json, management_token")
         .eq("is_active", True)
         .execute()
     )
@@ -174,6 +319,7 @@ def send_daily_briefs() -> dict[str, Any]:
     for subscriber in subscribers:
         email = subscriber.get("email")
         preferences = subscriber.get("preferences_json")
+        management_token = subscriber.get("management_token")
 
         if not email:
             continue
@@ -196,7 +342,7 @@ def send_daily_briefs() -> dict[str, Any]:
 
         # Generate and send personalized email
         try:
-            html_content = generate_html_digest(personalized_news)
+            html_content = generate_html_digest(personalized_news, management_token)
             params: resend.Emails.SendParams = {
                 "from": "Alfred <onboarding@resend.dev>",
                 "to": [email],
