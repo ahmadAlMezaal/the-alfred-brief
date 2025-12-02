@@ -139,7 +139,7 @@ def send_daily_briefs() -> dict[str, Any]:
     subscribers_response = (
         client.table("subscribers")
         .select("id, email, preferences_json")
-        .eq("active", True)
+        .eq("is_active", True)
         .execute()
     )
     subscribers = subscribers_response.data

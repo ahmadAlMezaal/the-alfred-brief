@@ -12,6 +12,7 @@ beautifulsoup4 = "^4.14.3"
 python-dotenv = "^1.2.1"
 supabase = "^2.10.0"
 resend = "^2.19.0"
+lxml = "^6.0.2"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -93,6 +93,28 @@
     - Sends personalized HTML digest via Resend.
   - ✅ Updated `backend/main.py` to call `send_daily_briefs()`.
 
+### ✅ Phase 8: The Intelligence Expansion (Tech & Finance)
+
+- **Objective:** Build the missing scrapers so users who select "Tech" or "Finance" actually receive data.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Created `backend/src/scrapers/tech.py` (BBC Technology RSS scraper).
+    - Targets: `https://feeds.bbci.co.uk/news/technology/rss.xml` (RSS feed for reliability).
+    - Extracts top 3 headlines + links + summaries.
+    - Category: "tech".
+    - Added `lxml` dependency for XML parsing.
+  - ✅ Created `backend/src/scrapers/finance.py` (Exchange Rate API scraper).
+    - Targets: `https://open.er-api.com/v6/latest/GBP` (free API, no key required).
+    - Extracts current GBP/USD exchange rate.
+    - Title format: "GBP to USD: [Price]".
+    - Category: "finance".
+  - ✅ Updated `backend/src/scrapers/__init__.py` with new exports.
+  - ✅ Updated `backend/main.py`:
+    - Imports `scrape_tech` and `scrape_finance`.
+    - `run_scrapers()` now calls all three scrapers (Immigration, Tech, Finance).
+    - Each scraper wrapped in its own try/catch block for fault isolation.
+  - ✅ Fixed `backend/src/mailer.py`: Corrected column name from `active` to `is_active`.
+
 ## CURRENT STATE
 
-- Phase 7 fully complete. Backend now sends personalized daily briefs based on each subscriber's topic preferences (Immigration, Tech, Finance).
+- Phase 8 fully complete. All three categories (Immigration, Tech, Finance) now have working scrapers. Users selecting any topic will receive relevant data in their personalized daily briefs.

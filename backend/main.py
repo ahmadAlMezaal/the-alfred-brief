@@ -4,16 +4,32 @@ import sys
 
 from src.db import test_connection
 from src.scrapers.immigration import scrape_and_save as scrape_immigration
+from src.scrapers.tech import scrape_and_save as scrape_tech
+from src.scrapers.finance import scrape_and_save as scrape_finance
 from src.mailer import send_daily_briefs
 
 
 def run_scrapers() -> None:
     """Run all data scrapers."""
     print("\n--- Running Scrapers ---")
+
+    # Immigration scraper
     try:
         scrape_immigration()
     except Exception as e:
         print(f"Immigration scraper failed: {e}")
+
+    # Tech scraper
+    try:
+        scrape_tech()
+    except Exception as e:
+        print(f"Tech scraper failed: {e}")
+
+    # Finance scraper
+    try:
+        scrape_finance()
+    except Exception as e:
+        print(f"Finance scraper failed: {e}")
 
 
 def run_mailer() -> None:
