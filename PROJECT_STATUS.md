@@ -160,6 +160,22 @@
   - ✅ Added `APP_BASE_URL` environment variable support (defaults to `http://localhost:3000`).
   - ✅ Used table-based layout with inline CSS for maximum email client compatibility.
 
+### ✅ Phase 11: Operation Skyhook (Deployment)
+
+- **Objective:** Deploy the application so it runs automatically via GitHub Actions.
+- **Status:** DONE
+- **Completed Tasks:**
+  - ✅ Created `.github/workflows/daily-brief.yml` GitHub Actions workflow.
+    - Trigger: Scheduled at `0 8 * * *` (8 AM UTC daily).
+    - Trigger: `workflow_dispatch` for manual testing via GitHub UI.
+    - Environment: `ubuntu-latest`.
+    - Steps: Checkout → Setup Python 3.11 → Install Poetry → Install Dependencies → Run Script.
+    - Secrets mapped to environment variables:
+      - `SUPABASE_URL` → `${{ secrets.SUPABASE_URL }}`
+      - `SUPABASE_KEY` → `${{ secrets.SUPABASE_KEY }}`
+      - `RESEND_API_KEY` → `${{ secrets.RESEND_API_KEY }}`
+      - `APP_BASE_URL` → `${{ secrets.APP_BASE_URL }}`
+
 ## CURRENT STATE
 
-- Phase 10 fully complete. Emails now feature a premium dark-themed design matching the web dashboard, with styled news cards, color-coded category badges, formatted dates, and a "Manage Preferences" link in the footer.
+- Phase 11 fully complete. The application now runs automatically via GitHub Actions at 8 AM UTC daily. Manual triggers are also available via the Actions UI for testing.
